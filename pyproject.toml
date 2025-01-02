@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "minrl"
+version = "0.0.1"
+description = "A minimal implementation of RL for LLMs in Pytorch"
+authors = ["Jan Huenermann <hi@janhuenermann.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+huggingface_hub = "^0.30.2"
+tokenizers = "^0.21.0"
+pandas = "^2.2.3"
+# flash-attn = "^2.7.4.post1"
+scipy = "^1.15.2"
+wandb = "^0.19.10"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.4"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100

@@ -212,20 +212,21 @@ class LanguageModel(nn.Module):
         x = self.norm(x)
 
         if return_sample:
-            x = x[:, -1:]
-
-            if isinstance(self.embed_tokens, LoRAEmbedding):
-                logits = self.embed_tokens.dot_product(x)
-            else:
-                logits = torch.matmul(x, self.embed_tokens.weight.t())
-
-            return sample(logits)
+            return sample(self.lm_head(x[:, -1:]))
         if return_next_token_logits:
-            return torch.matmul(x[:, -1:], self.embed_tokens.weight.t())
+            return self.lm_head(x[:, -1:])
         if return_logits:
-            return torch.matmul(x, self.embed_tokens.weight.t())
+            return self.lm_head(x)
 
         return x
+
+    def lm_head(self, x: Tensor):
+        if isinstance(self.embed_tokens, LoRAEmbedding):
+            logits = self.embed_tokens.scores(x)
+        else:
+            logits = torch.matmul(x, self.embed_tokens.weight.t())
+
+        return logits
 
     def decode_prefill(self, x: Tensor, cache_pos: Tensor | None = None):
         return self.forward(x, cache_pos=cache_pos, return_sample=True)

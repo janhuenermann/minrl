@@ -16,7 +16,7 @@ class LoRALinear(nn.Module):
         self.lora_A = nn.Parameter(torch.empty(rank, in_size))
         self.lora_B = nn.Parameter(torch.zeros(out_size, rank))
         self.use_lora = True
-        self.scale = 16 / rank
+        self.scale = 1.0
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
 
     def forward(self, x: Tensor) -> Tensor:
@@ -37,11 +37,10 @@ class LoRALinear(nn.Module):
         )
 
         lora.weight.data = layer.weight.data
+        lora.weight.requires_grad = False
 
         if layer.bias is not None:
             lora.bias.data = layer.bias.data
-
-        lora.weight.requires_grad = False
 
         lora.lora_A.to(dtype=dtype)
         lora.lora_B.to(dtype=dtype)
@@ -72,7 +71,7 @@ class LoRAEmbedding(nn.Module):
         self.lora_A = nn.Parameter(torch.zeros(rank, num_embeddings))
         self.lora_B = nn.Parameter(torch.empty(embedding_dim, rank))
         self.use_lora = True
-        self.scale = 16 / rank
+        self.scale = 1.0
         nn.init.kaiming_uniform_(self.lora_B, a=math.sqrt(5))
 
     def forward(self, x: Tensor) -> Tensor:
@@ -83,7 +82,7 @@ class LoRAEmbedding(nn.Module):
             F.embedding(x, self.lora_A.T), self.lora_B
         )
 
-    def dot_product(self, x: Tensor) -> Tensor:
+    def scores(self, x: Tensor) -> Tensor:
         if not self.use_lora:
             return F.linear(x, self.weight)
 

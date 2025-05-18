@@ -10,11 +10,11 @@ from minrl.trainer import Trainer
 
 def train(
     model_name: str = "Qwen/Qwen3-1.7B-Base",
-    batch_size: int = 200,
-    num_answers_per_question: int = 8,
+    batch_size: int = 160,
+    num_answers_per_question: int = 16,
     gradient_batch_size: int = 1,
-    lora_rank: int = 32,
-    generation_length: int = 400,
+    lora_rank: int = 64,
+    generation_length: int = 512,
 ):
     num_questions_per_batch = batch_size // num_answers_per_question
     tokenizer = Tokenizer.from_huggingface(model_name)

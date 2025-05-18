@@ -176,9 +176,9 @@ class Trainer:
 
         # Normalize gradients to number of tokens
         grad_scale = total_ntokens / normalize_factor
-        for pn, param in self.model.named_parameters():
-            if param.grad is not None:
-                param.grad /= grad_scale
+        torch._foreach_div_(
+            [p.grad for p in self.model.parameters() if p.grad is not None], grad_scale
+        )
 
         return total_loss / grad_scale
 
@@ -239,7 +239,7 @@ class Trainer:
 
     def configure_optimizer(self):
         return torch.optim.AdamW(
-            self.model.parameters(), lr=self.lr, betas=(0.9, 0.99), weight_decay=0.01
+            self.model.parameters(), lr=self.lr, betas=(0.9, 0.999), weight_decay=0.01
         )
 
 

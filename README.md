@@ -28,7 +28,7 @@ MAX_JOBS=4 pip install -v --no-build-isolation flash-attn
 
 ### Training
 
-To start training, you can simply run the `scripts/train_grpo.py` scrip, which will automatically download the required artifacts (dataset and base model) and start training.
+To start training, you can simply run the `scripts/train_grpo.py` script, which will automatically download the required artifacts (dataset and base model) and start training.
 
 ```bash
 python scripts/train_grpo.py

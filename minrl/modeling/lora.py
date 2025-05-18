@@ -20,12 +20,10 @@ class LoRALinear(nn.Module):
         nn.init.kaiming_uniform_(self.lora_A, a=math.sqrt(5))
 
     def forward(self, x: Tensor) -> Tensor:
-        if not self.use_lora:
-            return F.linear(x, self.weight, self.bias)
-
-        return F.linear(x, self.weight, self.bias) + self.scale * F.linear(
-            F.linear(x, self.lora_A), self.lora_B
-        )
+        y = F.linear(x, self.weight, self.bias)
+        if self.use_lora:
+            y += self.scale * F.linear(F.linear(x, self.lora_A), self.lora_B)
+        return y
 
     @classmethod
     def wrap(cls, layer: nn.Linear, rank=8, dtype=torch.float32):
@@ -41,6 +39,7 @@ class LoRALinear(nn.Module):
 
         if layer.bias is not None:
             lora.bias.data = layer.bias.data
+            lora.bias.requires_grad = False
 
         lora.lora_A.to(dtype=dtype)
         lora.lora_B.to(dtype=dtype)
@@ -75,20 +74,16 @@ class LoRAEmbedding(nn.Module):
         nn.init.kaiming_uniform_(self.lora_B, a=math.sqrt(5))
 
     def forward(self, x: Tensor) -> Tensor:
-        if not self.use_lora:
-            return F.embedding(x, self.weight)
-
-        return F.embedding(x, self.weight) + self.scale * F.linear(
-            F.embedding(x, self.lora_A.T), self.lora_B
-        )
+        y = F.embedding(x, self.weight)
+        if self.use_lora:
+            y += self.scale * F.linear(F.embedding(x, self.lora_A.T), self.lora_B)
+        return y
 
     def scores(self, x: Tensor) -> Tensor:
-        if not self.use_lora:
-            return F.linear(x, self.weight)
-
-        return F.linear(x, self.weight) + self.scale * F.linear(
-            F.linear(x, self.lora_B.T), self.lora_A.T
-        )
+        y = F.linear(x, self.weight)
+        if self.use_lora:
+            y += self.scale * F.linear(F.linear(x, self.lora_B.T), self.lora_A.T)
+        return y
 
     @classmethod
     def wrap(cls, layer: nn.Embedding, rank=8, dtype=torch.float32):
